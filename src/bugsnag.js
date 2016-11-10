@@ -590,13 +590,12 @@
   //
 
   // Compile regular expressions upfront.
-  var API_KEY_REGEX = /^[0-9a-f]{32}$/i;
   var FUNCTION_REGEX = /function\s*([\w\-$]+)?\s*\(/i;
 
   // Set up default notifier settings.
-  var DEFAULT_BASE_ENDPOINT = "https://notify.bugsnag.com/";
-  var DEFAULT_NOTIFIER_ENDPOINT = DEFAULT_BASE_ENDPOINT + "js";
-  var NOTIFIER_VERSION = "3.0.6";
+  var DEFAULT_BASE_ENDPOINT = "/";
+  var DEFAULT_NOTIFIER_ENDPOINT = DEFAULT_BASE_ENDPOINT + "bug";
+  var NOTIFIER_VERSION = "3.0.6hi";
 
   // Keep a reference to the currently executing script in the DOM.
   // We'll use this later to extract settings from attributes.
@@ -620,7 +619,6 @@
 
   // Simple logging function that wraps `console.log` if available.
   // This is useful for warning about configuration issues
-  // eg. forgetting to set an API key.
   function log(msg) {
     var disableLog = getSetting("disableLog");
 
@@ -872,16 +870,6 @@
     return setting !== undefined ? setting : fallback;
   }
 
-  // Validate a Bugsnag API key exists and is of the correct format.
-  function validateApiKey(apiKey) {
-    if (!apiKey || !apiKey.match(API_KEY_REGEX)) {
-      log("Invalid API key '" + apiKey + "'");
-      return false;
-    }
-
-    return true;
-  }
-
   // get breadcrumb specific setting. When autoBreadcrumbs is true, all individual events are defaulted
   // to true. Otherwise they will all default to false. You can set any event specifically and it will override
   // the default.
@@ -892,9 +880,7 @@
 
   // Send an error to Bugsnag.
   function sendToBugsnag(details, metaData) {
-    // Validate the configured API key.
-    var apiKey = getSetting("apiKey");
-    if (!validateApiKey(apiKey) || !eventsRemaining) {
+    if (!eventsRemaining) {
       return;
     }
 
@@ -936,7 +922,7 @@
     var payload = {
       notifierVersion: NOTIFIER_VERSION,
 
-      apiKey: apiKey,
+      apiKey: getSetting('apiKey'),
       projectRoot: getSetting("projectRoot") || window.location.protocol + "//" + window.location.host,
       context: getSetting("context") || window.location.pathname,
       user: getSetting("user"),
